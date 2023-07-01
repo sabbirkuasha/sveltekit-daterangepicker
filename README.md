@@ -1,38 +1,141 @@
-# create-svelte
+# sveltekit-dateRangePicker
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Checkout Demo [`sveltekit-dateRangePicker`](https://sveltekit-daterangepicker.vercel.app/).
 
-## Creating a project
+## Step by step guide
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- Install sveltekit [`sveltekit install guide`](https://www.sabbirz.com/blog/install-sveltekit-efficientlysvelte-kit--vite-).
+- Install daterangepicker & moment
 
 ```bash
-npm run dev
+# install daterangepicker
+npm i daterangepicker
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# install moment
+npm i moment
 ```
 
-## Building
+- DateRangePicker uses Jquery but we will skip using Jquery and we will do it, using tools provided by sveltekit
+- Import onMount and daterangepicker
 
-To create a production version of your app:
+```js
+import { onMount } from 'svelte';
+import moment from 'moment'; //this actually have no use, you can understand later
+import daterangepicker from 'daterangepicker';
+```
+
+- Let's create 2 variables, one to target html markup and another to hold the selected date
+
+```js
+let dateContainerID = '#dateRange';
+let DateSelected = '';
+```
+
+- Let's write onMount functiont
+
+```js
+onMount(() => {
+	const options = {
+		startDate: moment().subtract(6, 'days'),
+		endDate: moment(),
+		opens: 'right',
+		alwaysShowCalendars: true,
+		ranges: {
+			'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+			'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+			'This Month': [moment().startOf('month'), moment().endOf('month')],
+			'Last Month': [
+				moment().subtract(1, 'month').startOf('month'),
+				moment().subtract(1, 'month').endOf('month')
+			]
+		}
+	};
+
+	const picker = new daterangepicker(dateContainerID, options, (start, end) => {
+		DateSelected = start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD');
+		console.log('New date range selected: ' + DateSelected);
+	});
+});
+```
+
+- Let's write the markup
+
+```html
+<main>
+	<div class="m-auto text-center my-5">
+		<input type="text" id="dateRange" value="" class="w-1/2 bg-orange-700 text-white font-bold" />
+	</div>
+</main>
+```
+
+- So the complete code will be looks like this
+
+```Js
+<script>
+	import { onMount } from 'svelte';
+	import moment from 'moment';
+	import daterangepicker from 'daterangepicker';
+
+	let dateContainerID = '#dateRange';
+	let DateSelected = '';
+
+	onMount(() => {
+		const options = {
+			startDate: moment().subtract(6, 'days'),
+			endDate: moment(),
+			opens: 'right',
+			alwaysShowCalendars: true,
+			ranges: {
+				'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+				'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+				'This Month': [moment().startOf('month'), moment().endOf('month')],
+				'Last Month': [
+					moment().subtract(1, 'month').startOf('month'),
+					moment().subtract(1, 'month').endOf('month')
+				]
+			}
+		};
+
+		const picker = new daterangepicker(dateContainerID, options, (start, end) => {
+			DateSelected = start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD');
+			console.log('New date range selected: ' + DateSelected);
+		});
+	});
+</script>
+
+<main>
+	<div class="m-auto text-center my-5">
+		<input type="text" id="dateRange" value="" class="w-1/2 bg-orange-700 text-white font-bold" />
+	</div>
+</main>
+
+```
+
+- Run
 
 ```bash
-npm run build
+npm run dev -- --host
 ```
 
-You can preview the production build with `npm run preview`.
+- You will find an error, stating that momentjs is not a function LOL
+- Remove moment from script tag
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+```js
+import { onMount } from 'svelte';
+//	import moment from 'moment';
+import daterangepicker from 'daterangepicker';
+```
+
+> Check **package.json** for **moment js** version number & then find the minified CDN version & then paste it inside **head** tag & don't forget **dateRangePicker CSS** file too
+
+```html
+<!-- for date range picker -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<link
+	rel="stylesheet"
+	type="text/css"
+	href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
+/>
+```
+
+- DONE
